@@ -20,12 +20,12 @@ endif()
 
 if(NOT TARGET impedance)
 add_library(impedance STATIC
-    src/impedance.c
+        src/impedance.c
 )
 
 target_include_directories(impedance PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/src
-    ${CMAKE_CURRENT_SOURCE_DIR}/../vexspoke/src
+        src
+        ../../ecosystem/vexspoke/src
 )
 
 target_compile_options(impedance PRIVATE -Wall -Wextra -Werror)
@@ -35,13 +35,13 @@ if(TARGET vexspoke)
 endif()
 endif()
 
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/main.c" AND NOT TARGET impedance_app)
+if(EXISTS "src/main.c" AND NOT TARGET impedance_app)
     add_executable(impedance_app
-        src/main.c
+            src/main.c
     )
     target_include_directories(impedance_app PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/src
-        ${CMAKE_CURRENT_SOURCE_DIR}/../vexspoke/src
+            src
+            ../../ecosystem/vexspoke/src
     )
     target_compile_options(impedance_app PRIVATE -Wall -Wextra -Werror)
     target_link_libraries(impedance_app PRIVATE impedance vexspoke)
