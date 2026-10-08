@@ -28,7 +28,7 @@ bool Impedance_init(double sample_rate, uint32_t channels, Impedance *daw) {
     (*daw).channels = (channels > 0) ? channels : 2;
     (*daw).master_volume = 1.0f;
     (*daw).track_count = 0;
-    (*daw).hal_engine = NULL;
+    (*daw).hal_engine = nullptr;
 
     memset((*daw).tracks, 0, sizeof((*daw).tracks));
     return true;
@@ -220,7 +220,7 @@ bool Impedance_start_live(Impedance *daw) {
     cfg.callback = impedance_hal_callback;
     cfg.user_data = (void*) daw;
 
-    AudioHal *hal = NULL;
+    AudioHal *hal = nullptr;
     if (!AudioHal_create(&cfg, &hal)) {
         return false;
     }
@@ -240,5 +240,5 @@ void Impedance_stop_live(Impedance *daw) {
     }
     AudioHal_stop((*daw).hal_engine);
     AudioHal_destroy((*daw).hal_engine);
-    (*daw).hal_engine = NULL;
+    (*daw).hal_engine = nullptr;
 }
