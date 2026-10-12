@@ -5,7 +5,7 @@ from the workspace root. The current shell is not a finished DAW.
 
 ## Current State
 
-**Draft — not finalized.** The current C shell is not a finished DAW.
+**Draft — unfinished, not finalized.** The current C shell is not a finished DAW.
 
 **Role:** R5 interactable — a GPU/CPU hybrid Digital Audio Workstation (DAW)
 targeting high-concurrency multi-track mixing and low-latency playback.
@@ -20,7 +20,7 @@ a smoke test. It includes Vexspoke headers (`audio/audio_hal.h`,
 mixing beyond the shell, and persistence.
 
 **Proven:** nothing — the shell's files carry no executed owner test in
-`tests/test-checklist.md`; no platform or audio output is proven.
+`../../gist/test-checklist.md`; no platform or audio output is proven.
 
 ## Architecture
 
