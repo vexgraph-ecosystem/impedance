@@ -7,6 +7,7 @@
 
 #define TWO_PI 6.28318530717958647692
 
+// Forward audio-device output requests to the DAW renderer when its context exists.
 static void impedance_hal_callback(
     float *interleaved_output,
     uint32_t frame_count,
@@ -19,6 +20,7 @@ static void impedance_hal_callback(
     }
 }
 
+// Initialize the mixer state, substituting default sample rate and channel count when invalid.
 bool Impedance_init(double sample_rate, uint32_t channels, Impedance *daw) {
     if (!daw) {
         return false;
@@ -34,6 +36,7 @@ bool Impedance_init(double sample_rate, uint32_t channels, Impedance *daw) {
     return true;
 }
 
+// Stop live audio and clear the active track count before releasing the mixer state.
 void Impedance_destroy(Impedance *daw) {
     if (!daw) {
         return;
@@ -42,6 +45,7 @@ void Impedance_destroy(Impedance *daw) {
     (*daw).track_count = 0;
 }
 
+// Add an initialized track and return its index, or the sentinel when the mixer is full.
 uint32_t Impedance_add_track(const char *name, ImpedanceComputeMode mode, Impedance *daw) {
     if (!daw || (*daw).track_count >= IMPEDANCE_MAX_TRACKS) {
         return 0xFFFFFFFFu;
@@ -73,6 +77,7 @@ uint32_t Impedance_add_track(const char *name, ImpedanceComputeMode mode, Impeda
     return idx;
 }
 
+// Set a track's nonnegative volume when the requested index is active.
 bool Impedance_set_track_volume(uint32_t track_idx, float volume, Impedance *daw) {
     if (!daw || track_idx >= (*daw).track_count) {
         return false;
@@ -81,6 +86,7 @@ bool Impedance_set_track_volume(uint32_t track_idx, float volume, Impedance *daw
     return true;
 }
 
+// Set a track's pan after clamping it to the supported left-to-right range.
 bool Impedance_set_track_pan(uint32_t track_idx, float pan, Impedance *daw) {
     if (!daw || track_idx >= (*daw).track_count) {
         return false;
@@ -95,6 +101,7 @@ bool Impedance_set_track_pan(uint32_t track_idx, float pan, Impedance *daw) {
     return true;
 }
 
+// Set the playback-speed multiplier for an active track.
 bool Impedance_set_track_scratch_speed(uint32_t track_idx, float speed, Impedance *daw) {
     if (!daw || track_idx >= (*daw).track_count) {
         return false;
@@ -103,6 +110,7 @@ bool Impedance_set_track_scratch_speed(uint32_t track_idx, float speed, Impedanc
     return true;
 }
 
+// Start the first available voice on a track for the requested MIDI note.
 void Impedance_note_on(uint32_t track_idx, uint8_t midi_note, float velocity, Impedance *daw) {
     if (!daw || track_idx >= (*daw).track_count) {
         return;
@@ -126,6 +134,7 @@ void Impedance_note_on(uint32_t track_idx, uint8_t midi_note, float velocity, Im
     }
 }
 
+// Deactivate active voices matching the MIDI note on the selected track.
 void Impedance_note_off(uint32_t track_idx, uint8_t midi_note, Impedance *daw) {
     if (!daw || track_idx >= (*daw).track_count) {
         return;
@@ -142,6 +151,7 @@ void Impedance_note_off(uint32_t track_idx, uint8_t midi_note, Impedance *daw) {
     }
 }
 
+// Clear and mix active, unmuted voices into the caller's interleaved output buffer.
 void Impedance_render(Impedance *daw, float *interleaved_out, uint32_t frames, uint32_t channels) {
     if (!daw || !interleaved_out || frames == 0 || channels == 0) {
         return;
@@ -205,6 +215,7 @@ void Impedance_render(Impedance *daw, float *interleaved_out, uint32_t frames, u
     }
 }
 
+// Create and start the audio HAL using the mixer's configured output format.
 bool Impedance_start_live(Impedance *daw) {
     if (!daw) {
         return false;
@@ -234,6 +245,7 @@ bool Impedance_start_live(Impedance *daw) {
     return true;
 }
 
+// Stop and destroy the live audio device, if one is attached.
 void Impedance_stop_live(Impedance *daw) {
     if (!daw || !(*daw).hal_engine) {
         return;

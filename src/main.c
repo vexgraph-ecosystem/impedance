@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include "impedance.h"
 
+// Run a short offline mixer smoke test, then release the initialized DAW state.
 int main(void) {
     printf("[Impedance DAW] Initializing GPU/CPU Hybrid DAW...\n");
 
