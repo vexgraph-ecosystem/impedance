@@ -1,6 +1,24 @@
 #include <stdio.h>
 #include <unistd.h>
 #include "impedance.h"
+#include "annotation/definition.h"
+#include "annotation/overview.h"
+
+;;DEFINITION
+/** The Impedance executable entry point is an offline smoke probe: initialize
+ * the mixer, add two tracks, enqueue two notes, render a fixed stereo buffer,
+ * report peak amplitude, and release state. It does not open a live audio device
+ * or establish full application readiness. */
+;;OVERVIEW
+/** ========================================================================
+ * MODULE: impedance/src/main.c
+ * FUNCTION REGISTRY
+ * Entry point: int main(void)
+ * Contract: all mixer state is local to main; initialization failure exits
+ * nonzero, successful construction is destroyed before normal return. The
+ * fixed sample count is this smoke probe's workload, not a configurable runtime
+ * limit or performance claim.
+ * ======================================================================== */
 
 // Run a short offline mixer smoke test, then release the initialized DAW state.
 int main(void) {

@@ -1,4 +1,6 @@
 #include "impedance.h"
+#include "annotation/definition.h"
+#include "annotation/overview.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -6,6 +8,40 @@
 #include <string.h>
 
 #define TWO_PI 6.28318530717958647692
+
+;;DEFINITION
+/** Impedance is the R5 DAW's fixed-capacity mixer state and audio callback
+ * bridge. It owns tracks and voices inline, while the R3 AudioHal is acquired
+ * only by start_live and stopped before destruction. The offline render path
+ * consumes caller-provided output storage; this file is not proof of a complete
+ * DAW workflow or GPU compute backend. */
+;;OVERVIEW
+/** ========================================================================
+ * CLASS: Impedance (src/impedance.c)
+ * STRUCT FIELDS (Mirroring impedance.h)
+ * double sample_rate             admitted render sample rate
+ * uint32_t channels              configured output channel count
+ * float master_volume            mixer output gain
+ * ImpedanceTrack tracks[16]      fixed inline track/voice records
+ * uint32_t track_count           initialized track prefix length
+ * AudioHal *hal_engine           owned live audio engine when started
+ * FUNCTION REGISTRY
+ * Lifecycle: bool Impedance_init(double sample_rate,uint32_t channels,
+ *   Impedance *daw), void Impedance_destroy(Impedance *daw)
+ * Mixer: uint32_t Impedance_add_track(const char *name,ImpedanceComputeMode mode,
+ *   Impedance *daw); bool Impedance_set_track_volume/pan/scratch_speed(...)
+ * Notes/render: void Impedance_note_on/off(...),
+ *   void Impedance_render(Impedance *daw,float *interleaved_out,
+ *   uint32_t frames,uint32_t channels)
+ * Live lifecycle: bool Impedance_start_live(Impedance *daw),
+ *   void Impedance_stop_live(Impedance *daw)
+ * Private helper: impedance_hal_callback forwards device output to render.
+ * Ownership and failure contract:
+ * Track and voice storage is inline and bounded by the declared track/voice
+ * arrays. Invalid render/track inputs are rejected or ignored as implemented;
+ * live engine ownership ends in stop_live/destroy. This API has no general DAW
+ * session workflow.
+ * ======================================================================== */
 
 // Forward audio-device output requests to the DAW renderer when its context exists.
 static void impedance_hal_callback(
@@ -224,15 +260,12 @@ bool Impedance_start_live(Impedance *daw) {
         return true;
     }
 
-    AudioHalConfig cfg = AudioHalConfig_default();
-    cfg.sample_rate = (*daw).sample_rate;
-    cfg.channels = (*daw).channels;
-    cfg.buffer_frames = 256;
-    cfg.callback = impedance_hal_callback;
-    cfg.user_data = (void*) daw;
-
-    AudioHal *hal = nullptr;
-    if (!AudioHal_create(&cfg, &hal)) {
+    AudioHalConfig cfg = AudioHalConfig(impedance_hal_callback, (void*) daw);
+    AudioHalConfig_set_sample_rate(&cfg, (*daw).sample_rate);
+    AudioHalConfig_set_channels(&cfg, (*daw).channels);
+    AudioHalConfig_set_buffer_frames(&cfg, 256);
+    AudioHal *hal = AudioHal(&cfg);
+    if (!hal) {
         return false;
     }
 
